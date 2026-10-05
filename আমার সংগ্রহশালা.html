@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>আমার সংগ্রহশালা</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;700&family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#faf6ef;--fg:#2a2420;--muted:#7a6f66;--accent:#b4472b;--card:#fffdf8;--line:#e6dccd;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1715;--fg:#efe7dc;--muted:#a69a8e;--accent:#e58a6d;--card:#241f1c;--line:#3a322d}}
+:root[data-theme="dark"]{--bg:#1b1715;--fg:#efe7dc;--muted:#a69a8e;--accent:#e58a6d;--card:#241f1c;--line:#3a322d}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:'Hind Siliguri',system-ui,sans-serif;line-height:1.8}
+.wrap{max-width:680px;margin:0 auto;padding:0 20px}
+header{padding:40px 0 24px;border-bottom:1px solid var(--line)}
+h1{font-family:'Noto Serif Bengali',serif;font-size:2rem;margin:0;color:var(--accent)}
+header p{margin:6px 0 0;color:var(--muted)}
+nav{display:flex;gap:18px;margin-top:16px;font-weight:500}
+nav a{color:var(--fg);text-decoration:none;border-bottom:2px solid transparent}
+nav a:hover{border-color:var(--accent)}
+.post{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:20px 0}
+.meta{font-size:.85rem;color:var(--muted)}
+.post h2{font-family:'Noto Serif Bengali',serif;font-size:1.3rem;margin:6px 0;line-height:1.5}
+.post p{margin:6px 0 10px}
+.more{color:var(--accent);font-weight:600;text-decoration:none}
+.tag{display:inline-block;font-size:.75rem;background:var(--line);padding:0 10px;border-radius:99px;margin-right:6px}
+#about{padding:20px 0}
+#about h3{font-family:'Noto Serif Bengali',serif}
+footer{text-align:center;color:var(--muted);padding:30px 0;border-top:1px solid var(--line);font-size:.9rem}
+.editor{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:20px 0}
+.editor h3{font-family:'Noto Serif Bengali',serif;margin:0 0 10px}
+.editor input,.editor textarea{width:100%;font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px}
+.editor textarea{min-height:160px;resize:vertical}
+.btn{font:inherit;font-weight:600;background:var(--accent);color:#fff;border:0;border-radius:8px;padding:10px 20px;cursor:pointer}
+.del{font:inherit;background:none;border:0;color:var(--muted);cursor:pointer;float:right}
+.note{font-size:.85rem;color:var(--muted);margin-left:10px}
+.body{white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>আমার সংগ্রহশালা</h1>
+<p>ভাবনা, গল্প আর দৈনন্দিন জীবনের টুকরো কথা</p>
+<nav><a href="#write">নতুন লেখা</a><a href="#posts">লেখা</a><a href="#about">পরিচিতি</a></nav>
+</header>
+
+<section id="write" class="editor">
+<h3>নতুন লেখা</h3>
+<input id="t" placeholder="শিরোনাম" maxlength="120">
+<input id="c" placeholder="বিভাগ (যেমন: গল্প, ভাবনা)" maxlength="30">
+<textarea id="b" placeholder="এখানে লিখুন..."></textarea>
+<button class="btn" id="save">সংরক্ষণ করুন</button><span class="note" id="msg"></span>
+</section>
+<main id="posts"></main>
+<script>
+const KEY='songrohoshala_posts';
+const seeds=[
+{id:'s1',cat:'গল্প',date:'৫ অক্টোবর, ২০২৬',title:'বৃষ্টির দুপুরে চায়ের কাপ',body:'জানালার ধারে বসে বৃষ্টি দেখার মধ্যে এমন একটা শান্তি আছে, যা ব্যস্ত শহরে হারিয়ে যায়।'},
+{id:'s2',cat:'ভাবনা',date:'২৮ সেপ্টেম্বর, ২০২৬',title:'লেখালেখি শুরু করার ছোট্ট কৌশল',body:'প্রতিদিন মাত্র দশ মিনিট লিখুন। বিষয় ঠিক করার চিন্তা বাদ দিয়ে শুধু শুরু করুন।'}];
+let mine=[];
+try{mine=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){mine=[]}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(mine));return true}catch(e){return false}}
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
+function render(){
+const box=document.getElementById('posts');box.textContent='';
+[...mine,...seeds].forEach(p=>{
+const a=el('article','post');
+const m=el('div','meta');m.appendChild(el('span','tag',p.cat||'লেখা'));m.appendChild(document.createTextNode(p.date));
+if(!p.id.startsWith('s')){const d=el('button','del','মুছুন');d.onclick=()=>{if(confirm('লেখাটি মুছে ফেলবেন?')){mine=mine.filter(x=>x.id!==p.id);persist();render()}};m.appendChild(d)}
+a.appendChild(m);a.appendChild(el('h2',null,p.title));a.appendChild(el('p','body',p.body));
+box.appendChild(a)})}
+document.getElementById('save').onclick=()=>{
+const t=document.getElementById('t'),c=document.getElementById('c'),b=document.getElementById('b'),msg=document.getElementById('msg');
+if(!t.value.trim()||!b.value.trim()){msg.textContent='শিরোনাম ও লেখা দিন';return}
+mine.unshift({id:'u'+Date.now(),cat:c.value.trim(),title:t.value.trim(),body:b.value.trim(),date:new Date().toLocaleDateString('bn-BD',{day:'numeric',month:'long',year:'numeric'})});
+msg.textContent=persist()?'সংরক্ষিত হয়েছে ✓':'সংরক্ষণ করা গেল না';
+t.value=c.value=b.value='';render();document.getElementById('posts').scrollIntoView()};
+render();
+</script>
+
+<section id="about">
+<h3>পরিচিতি</h3>
+<p>এখানে আমি যা দেখি, ভাবি আর অনুভব করি, তা-ই লিখে সংরক্ষণ করি।</p>
+</section>
+
+<footer>© ২০২৬ আমার সংগ্রহশালা</footer>
+</div>
+</body>
+</html>
